@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="assets/logo.png" alt="DiscordLink logo" width="200" height="auto" />
+  <img src="Assets/logo.png" alt="DiscordLink logo" width="200" height="auto" />
   <h1>DiscordLink</h1>
 
   <p>
