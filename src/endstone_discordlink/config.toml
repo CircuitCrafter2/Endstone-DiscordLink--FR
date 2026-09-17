@@ -65,10 +65,17 @@ thumbnail_url = ""
 verify_button = "Verify"
 unlink_button = "Unlink"
 
+[ui.dm]
+enabled = true
+title = "## 🔐 DiscordLink Verification"
+description = "A Minecraft account link was requested for **{player}** on **{server_name}**."
+expiry = "Expires in **{expiry_minutes} minutes**."
+footer = "-# If you did not request this, ignore this message."
+
 [ui.verify_modal]
 title = "Verify Minecraft Account"
 label = "6-digit code"
-description = "Enter the code shown in Minecraft after using /link."
+description = "Enter the 6-digit code from your Discord DM or the code shown in Minecraft."
 
 [ui.success]
 embed_color = "#57F287"

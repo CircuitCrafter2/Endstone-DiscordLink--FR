@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "endstone-discordlink"
-version = "2.2.2"
+version = "2.2.3"
 description = "Discord Components V2 account linking and role sync for Endstone"
 requires-python = ">=3.11"
 authors = [{name = "KyroMC"}]

@@ -8,7 +8,7 @@
   </p>
 
   <p>
-    <img src="https://img.shields.io/badge/version-2.2.2-8B5CF6?style=for-the-badge" alt="version" />
+    <img src="https://img.shields.io/badge/version-2.2.3-8B5CF6?style=for-the-badge" alt="version" />
     <img src="https://img.shields.io/badge/Endstone-API%200.11-5865F2?style=for-the-badge" alt="Endstone API 0.11" />
   </p>
 
@@ -95,6 +95,7 @@ The plugin is designed to work **standalone** for account linking while automati
 | 🔗 Account Linking | Links a Minecraft Bedrock account to a Discord account with a six-digit code. |
 | 🛡️ Account-Bound Verification | Verification codes only work for the Discord ID entered by the Minecraft player. |
 | ⏱️ Temporary Codes | Configurable expiry, retry limits and request cooldowns. |
+| 📩 Discord DM Delivery | Confirms the Discord user is in the configured server, then attempts to DM the code in a copyable block with an in-game fallback if DMs are closed. |
 | 🎛️ Components V2 | Modern Discord verification panel, buttons, modals and private account cards. |
 | 🔄 Automatic Role Sync | Syncs roles immediately after a successful link, on join and periodically while players are online. |
 | 🧩 Optional Integrations | Supports permissions, factions and economy providers without making them hard dependencies. |
@@ -240,9 +241,9 @@ The default verification flow is intentionally simple:
 
 1. Player runs `/link` in Minecraft.
 2. Player taps **Link Discord** and enters their Discord user ID.
-3. Minecraft displays a temporary six-digit code.
-4. Player opens the Discord verification channel.
-5. Player taps **Verify** or runs `/verify` and enters the code.
+3. DiscordLink confirms the Discord account is a member of the configured Discord server.
+4. The bot attempts to DM the six-digit code in a copyable code block; Minecraft still shows the code as a fallback if DMs are closed.
+5. Player opens the Discord verification channel and taps **Verify** or runs `/verify` to enter the code.
 6. DiscordLink securely links the accounts.
 7. Configured Discord roles are synchronized automatically.
 8. The player receives a private success card containing the configured account placeholders.
@@ -259,6 +260,7 @@ Available configuration includes:
 - Verification channel restrictions.
 - Verification code length, expiry, retries and cooldown.
 - Guild membership requirement.
+- Discord DM verification-code delivery and customizable DM text.
 - Automatic role-sync interval.
 - Verified role.
 - Group → role mappings.

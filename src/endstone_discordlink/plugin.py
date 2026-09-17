@@ -79,7 +79,7 @@ class DiscordListener:
 
 class DiscordLinkPlugin(Plugin):
     api_version = "0.11"
-    version = "2.2.1"
+    version = "2.2.3"
     description = "Discord Components V2 verification and role sync for Endstone"
     authors: ClassVar[list[str]] = ["KyroMC"]
     prefix = "DiscordLink"
@@ -271,13 +271,24 @@ class DiscordLinkPlugin(Plugin):
             player.send_message(f"{PREFIX} {messages.get(pending.reason, '§cCould not create a verification request.')}")
             return
         player_name = player.name
+        dm_enabled = bool(self.ui_value("dm", "enabled", True))
+        dm_content = self._verification_dm_content(player_name, code)
         player.send_message(f"{PREFIX} §bChecking Discord ID…")
 
-        def job() -> None:
-            if self.settings.require_guild_membership:
+        def job():
+            if self.settings.require_guild_membership or dm_enabled:
                 self.discord.get_member(discord_id)
+            dm_error = None
+            dm_sent = False
+            if dm_enabled:
+                try:
+                    self.discord.send_dm_message(discord_id, dm_content)
+                    dm_sent = True
+                except Exception as exc:
+                    dm_error = exc
+            return dm_sent, dm_error
 
-        def done(_result, error: Exception | None) -> None:
+        def done(result, error: Exception | None) -> None:
             online = self._online_player(player_uuid, player_name)
             if error is not None:
                 self.storage.cancel_pending(player_uuid)
@@ -290,10 +301,31 @@ class DiscordLinkPlugin(Plugin):
                 return
             if online is None:
                 return
+            dm_sent, dm_error = result if isinstance(result, tuple) else (False, None)
+            if dm_enabled and dm_sent:
+                online.send_message(f"{PREFIX} §aVerification code sent to your Discord DMs.")
+            elif dm_enabled and dm_error is not None:
+                online.send_message(f"{PREFIX} §eI couldn't DM you. §7Use the code shown here instead.")
+                self.logger.info(f"Could not DM verification code to {discord_id} for {player_name}: {dm_error}")
             self.refresh_profile(online)
             self.forms.show_code(online, code)
 
         self._submit(job, done)
+
+    def _verification_dm_content(self, player_name: str, code: str) -> str:
+        expiry_minutes = max(1, (self.settings.expiry_seconds + 59) // 60)
+        values = {
+            "player": player_name,
+            "code": code,
+            "server_name": self.settings.server_name,
+            "expiry_minutes": str(expiry_minutes),
+        }
+        title = str(self.ui_value("dm", "title", "## 🔐 DiscordLink Verification"))
+        description = str(self.ui_value("dm", "description", "A Minecraft account link was requested for **{player}** on **{server_name}**."))
+        expiry = str(self.ui_value("dm", "expiry", "Expires in **{expiry_minutes} minutes**."))
+        footer = str(self.ui_value("dm", "footer", "-# If you did not request this, ignore this message."))
+        parts = [title, description, f"```text\n{code}\n```", expiry, footer]
+        return "\n\n".join(_format_text(part, values) for part in parts if part.strip())
 
     def send_link_status(self, player: Player) -> None:
         link = self.storage.get_link(str(player.unique_id))
@@ -810,6 +842,13 @@ def _xuid(player: Player) -> str | None:
 
 def _valid_discord_id(value: str) -> bool:
     return value.isdigit() and 17 <= len(value) <= 20
+
+
+def _format_text(value: str, values: dict[str, str]) -> str:
+    try:
+        return value.format_map(values)
+    except (KeyError, ValueError):
+        return value
 
 
 def _code(length: int) -> str:

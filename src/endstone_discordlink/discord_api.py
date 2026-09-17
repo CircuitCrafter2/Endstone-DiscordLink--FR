@@ -51,6 +51,13 @@ class DiscordClient:
             {"flags": 32768, "components": components},
         )
 
+    def send_dm_message(self, user_id: str, content: str) -> dict:
+        channel = self._request("POST", "/users/@me/channels", {"recipient_id": user_id})
+        channel_id = str(channel.get("id", "")).strip()
+        if not channel_id:
+            raise DiscordApiError(0, "Discord did not return a DM channel")
+        return self._request("POST", f"/channels/{channel_id}/messages", {"content": content})
+
     def interaction_callback(self, interaction_id: str, interaction_token: str, payload: dict) -> None:
         self._request(
             "POST",
@@ -116,7 +123,7 @@ class DiscordClient:
         data = None if payload is None else json.dumps(payload).encode("utf-8")
         headers = {
             "Content-Type": "application/json",
-            "User-Agent": "EndstoneDiscordLink/2.2.1 (+https://endstone.dev)",
+            "User-Agent": "EndstoneDiscordLink/2.2.3 (+https://endstone.dev)",
         }
         if use_auth:
             headers["Authorization"] = f"Bot {self.token}"

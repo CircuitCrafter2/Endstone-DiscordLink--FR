@@ -41,7 +41,7 @@ class _WebSocket:
             "Connection: Upgrade\r\n"
             f"Sec-WebSocket-Key: {key}\r\n"
             "Sec-WebSocket-Version: 13\r\n"
-            "User-Agent: EndstoneDiscordLink/2.2.1\r\n\r\n"
+            "User-Agent: EndstoneDiscordLink/2.2.3\r\n\r\n"
         )
         self.sock.sendall(request.encode("ascii"))
         response = self._read_headers()
