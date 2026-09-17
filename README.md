@@ -55,6 +55,7 @@
   - [Discord Setup](#speech_balloon-discord-setup)
 - [Usage](#eyes-usage)
 - [Configuration](#wrench-configuration)
+- [Todo](#memo-todo)
 - [Contributing](#wave-contributing)
 - [License](#warning-license)
 
@@ -281,6 +282,15 @@ embed_color = "#57F287"
 show_player_character = true
 hide_empty_fields = true
 ```
+
+## :memo: Todo
+
+| Status | Planned Feature | Description |
+| :---: | --- | --- |
+| ⬜ | **More Database Providers** | Add configurable database backends beyond the current SQLite storage. |
+| ⬜ | **Dynamic Leaderboards in Discord Channels** | Automatically publish and refresh live Minecraft leaderboards inside configured Discord channels. |
+| ⬜ | **Cross-Server Slash Commands — Punishments** | Allow authorized Discord staff to run configured punishment actions across connected Minecraft servers. |
+| ⬜ | **Cross-Server Slash Commands — Group/Rank Updates** | Allow authorized Discord staff to update player groups/ranks across connected Minecraft servers. |
 
 ## :wave: Contributing
 
