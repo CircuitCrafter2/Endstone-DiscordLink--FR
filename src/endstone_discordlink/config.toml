@@ -1,0 +1,153 @@
+[server]
+name = "KyroMC"
+discord_invite = "https://discord.gg/yourserver"
+
+[discord]
+bot_token = ""
+guild_id = ""
+verification_channel_id = ""
+require_guild_membership = true
+restrict_to_verification_channel = true
+gateway_enabled = true
+register_commands = true
+
+[security]
+code_length = 6
+expiry_seconds = 600
+max_attempts = 5
+cooldown_seconds = 60
+allow_relink = false
+
+[integrations]
+stoneperms = true
+pureperms = true
+factions = true
+bedrockeconomy = true
+
+[role_sync]
+verified_role_id = ""
+remove_managed_roles = true
+sync_interval_seconds = 60
+
+[role_sync.groups]
+# default = "123456789012345678"
+# vip = "123456789012345679"
+# mvp = "123456789012345680"
+# moderator = "123456789012345681"
+# admin = "123456789012345682"
+
+[role_sync.faction_ranks]
+# leader = "123456789012345683"
+# officer = "123456789012345684"
+# member = "123456789012345685"
+
+[role_sync.factions]
+# Kyro = "123456789012345686"
+
+# [[role_sync.economy_tiers]]
+# min_balance = 10000
+# max_balance = 99999
+# role_id = "123456789012345687"
+
+# [[role_sync.economy_tiers]]
+# min_balance = 100000
+# role_id = "123456789012345688"
+
+[ui.panel]
+embed_color = "#5865F2"
+title = "## 🔗 Minecraft Account Link"
+description = "Link your Minecraft account to Discord in under a minute."
+instructions = """**1.** Run `/link` in Minecraft
+**2.** Enter your Discord ID
+**3.** Press **Verify** and enter the 6-digit code"""
+footer = "-# Codes are temporary and locked to the Discord account entered in Minecraft."
+thumbnail_url = ""
+verify_button = "Verify"
+unlink_button = "Unlink"
+
+[ui.verify_modal]
+title = "Verify Minecraft Account"
+label = "6-digit code"
+description = "Enter the code shown in Minecraft after using /link."
+
+[ui.success]
+embed_color = "#57F287"
+show_player_character = true
+title = "## ✅ Account linked"
+linking_body = "## ✅ Code accepted\nLinking your account and syncing Discord roles…"
+hide_empty_fields = true
+fields = [
+    "Minecraft|`{player}`",
+    "Discord|{discord_mention}",
+    "Group|`{group}`",
+    "Faction|`{faction}`",
+    "Faction Rank|`{faction_rank}`",
+    "Balance|`{balance}`",
+    "XUID|`{xuid}`",
+    "Verified|{verified_timestamp}"
+]
+sync_line = "{role_sync_status}"
+footer = "-# Discord roles are kept in sync automatically while you play."
+thumbnail_url = "https://api.mcheads.org/head/.{player_url}/128"
+unlink_button = "Unlink"
+
+[ui.unlink]
+embed_color = "#FEE75C"
+confirm_body = "## 🔓 Unlink account?\nUnlink **{player}** from {discord_mention}?"
+confirm_button = "Unlink"
+cancel_button = "Cancel"
+success_body = "## ✅ Account unlinked\n**{player}** is no longer linked. Managed roles are being removed."
+
+[ui.error]
+embed_color = "#ED4245"
+
+[ui.neutral]
+embed_color = "#5865F2"
+
+[ui.commands]
+verify_description = "Verify and link your Minecraft account"
+unlink_description = "Unlink your Minecraft account"
+panel_description = "Send the DiscordLink verification panel"
+
+[ui.minecraft_link]
+title = "§l§9Discord Link"
+content = "§fLink your Minecraft account to Discord.\n\n§71. Tap §aLink Discord\n§72. Enter your Discord ID\n§73. Enter the 6-digit code in Discord\n\n§b{discord_invite}"
+link_button = "§a§lLINK DISCORD\n§r§7Generate a code"
+close_button = "§8Close"
+
+[ui.minecraft_linked]
+title = "§l§9Discord Link"
+content = "§a§l✓ LINKED§r\n§7Your Discord roles sync automatically."
+sync_button = "§eRefresh Roles\n§7Only needed if something looks wrong"
+unlink_button = "§cUnlink Discord\n§7Remove this account link"
+close_button = "§8Close"
+
+[ui.minecraft_id]
+title = "Discord ID"
+label = "Your Discord user ID"
+placeholder = "123456789012345678"
+submit_button = "Create Code"
+
+[ui.minecraft_code]
+title = "§l§aVerification Code"
+content = "§7Enter this code in the Discord verification channel:\n\n§l§e{code}§r\n\n§7Expires in §f{expiry_minutes} min§7. Tap §aVerify §7or use §f/verify§7 in Discord."
+done_button = "§aDone"
+close_button = "§8Close"
+chat_message = "§9§lDiscordLink§r §8»§r §fCode §e§l{code}§r §8• §7Enter it in Discord."
+
+[ui.minecraft_unlink]
+title = "Unlink Discord?"
+content = "§7This removes the account link and DiscordLink-managed roles."
+confirm_button = "§cUnlink"
+cancel_button = "§8Cancel"
+
+[ui.minecraft_admin]
+title = "§l§9DiscordLink Admin"
+content = "§7Links §f{links}  §8•  §7Pending §f{pending}\n§7Bot §f{gateway}\n\n{integrations}"
+panel_button = "§dSend Verify Panel\n§7Post the Discord V2 panel"
+sync_button = "§bSync Online Players\n§7Refresh managed Discord roles"
+reload_button = "§eReload Config"
+links_button = "§fLinked Accounts"
+links_title = "Linked Accounts"
+back_button = "Back"
+close_button = "§8Close"
