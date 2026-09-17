@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "endstone-discordlink"
+version = "2.2.2"
+description = "Discord Components V2 account linking and role sync for Endstone"
+requires-python = ">=3.11"
+authors = [{name = "KyroMC"}]
+license = {text = "MIT"}
+keywords = ["endstone", "minecraft", "bedrock", "discord", "verification", "link"]
+
+[project.entry-points."endstone"]
+discordlink = "endstone_discordlink:DiscordLinkPlugin"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+endstone_discordlink = ["config.toml"]
