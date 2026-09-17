@@ -10,8 +10,6 @@
   <p>
     <img src="https://img.shields.io/badge/version-2.2.2-8B5CF6?style=for-the-badge" alt="version" />
     <img src="https://img.shields.io/badge/Endstone-API%200.11-5865F2?style=for-the-badge" alt="Endstone API 0.11" />
-    <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11+" />
-    <img src="https://img.shields.io/badge/Discord-Components%20V2-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord Components V2" />
   </p>
 
   <p>
@@ -37,10 +35,6 @@
 
   <h4>
     <a href="https://github.com/GravityGDev/Endstone-DiscordLink/releases">Releases</a>
-    <span> · </span>
-    <a href="https://github.com/GravityGDev/Endstone-DiscordLink/issues">Report Bug</a>
-    <span> · </span>
-    <a href="https://github.com/GravityGDev/Endstone-DiscordLink/issues">Request Feature</a>
   </h4>
 </div>
 
@@ -63,7 +57,6 @@
 - [Configuration](#wrench-configuration)
 - [Contributing](#wave-contributing)
 - [License](#warning-license)
-- [Acknowledgements](#gem-acknowledgements)
 
 ## :star2: About the Project
 
@@ -147,8 +140,6 @@ Admin command aliases: `/dlinkadmin`, `/discordadmin`, `/dauth`.
 | **PurePerms** | ✅ | Primary group and groups → Discord roles. |
 | **Factions / zFactions** | ✅ | Faction name and faction rank → Discord roles. |
 | **BedrockEconomy** | ✅ | Balance tiers → Discord roles. |
-| **KyroMC provider services** | ✅ | Permission, faction and economy provider compatibility. |
-| **No integration plugins** | ✅ | Account linking and verified-role assignment still work standalone. |
 
 All integrations are optional and can be individually enabled or disabled in `config.toml`.
 
@@ -195,6 +186,7 @@ Before installing DiscordLink you need:
 
 - A Minecraft Bedrock Dedicated Server running **Endstone API 0.11**.
 - A Discord application/bot added to your Discord server.
+- OAuth2 scopes **`bot`** and **`applications.commands`** when generating the bot invite so Discord slash commands can register.
 - The bot permission to **Manage Roles**.
 - The bot's highest Discord role positioned above every role DiscordLink should manage.
 
@@ -301,13 +293,6 @@ Contributions are welcome. If you find a bug or have an improvement, open an iss
 ## :warning: License
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
-
-## :gem: Acknowledgements
-
-- [Endstone](https://github.com/EndstoneMC/endstone) — Bedrock Dedicated Server plugin framework.
-- [Discord Developer Platform](https://discord.com/developers/docs/intro) — interactions, Gateway and Components V2 APIs.
-- [Shields.io](https://shields.io/) — README badge chips.
-- [Awesome README Template](https://github.com/Louis3797/awesome-readme-template) — README layout foundation.
 
 <div align="center">
   <sub>Built for Minecraft Bedrock servers running Endstone.</sub>
