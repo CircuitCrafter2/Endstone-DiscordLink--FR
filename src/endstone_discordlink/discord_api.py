@@ -6,19 +6,16 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 
-
 class DiscordApiError(RuntimeError):
     def __init__(self, status: int, message: str) -> None:
-        super().__init__(f"Discord API {status}: {message}")
+        super().__init__(f"Erreur API Discord {status} : {message}")
         self.status = status
         self.message = message
-
 
 @dataclass(frozen=True)
 class SyncResult:
     added: tuple[str, ...]
     removed: tuple[str, ...]
-
 
 class DiscordClient:
     API = "https://discord.com/api/v10"
@@ -55,7 +52,7 @@ class DiscordClient:
         channel = self._request("POST", "/users/@me/channels", {"recipient_id": user_id})
         channel_id = str(channel.get("id", "")).strip()
         if not channel_id:
-            raise DiscordApiError(0, "Discord did not return a DM channel")
+            raise DiscordApiError(0, "Discord n'a pas retourné de canal de messages privés")
         return self._request("POST", f"/channels/{channel_id}/messages", {"content": content})
 
     def interaction_callback(self, interaction_id: str, interaction_token: str, payload: dict) -> None:
@@ -119,7 +116,7 @@ class DiscordClient:
         use_auth: bool = True,
     ):
         if use_auth and not self.token:
-            raise DiscordApiError(0, "bot token is not configured")
+            raise DiscordApiError(0, "Le jeton du bot n'est pas configuré")
         data = None if payload is None else json.dumps(payload).encode("utf-8")
         headers = {
             "Content-Type": "application/json",
