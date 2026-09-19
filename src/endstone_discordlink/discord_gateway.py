@@ -12,10 +12,8 @@ import threading
 import time
 from urllib.parse import urlparse
 
-
 class GatewayClosed(RuntimeError):
     pass
-
 
 class _WebSocket:
     def __init__(self, url: str, timeout: float = 10.0) -> None:
@@ -48,7 +46,7 @@ class _WebSocket:
         status_line = response.split("\r\n", 1)[0]
         if " 101 " not in status_line:
             self.close()
-            raise GatewayClosed(f"WebSocket handshake failed: {status_line}")
+            raise GatewayClosed(f"Échec de l'établissement de la connexion WebSocket : {status_line}")
         headers = {}
         for line in response.split("\r\n")[1:]:
             if ":" in line:
@@ -60,7 +58,7 @@ class _WebSocket:
         ).decode("ascii")
         if accept != expected:
             self.close()
-            raise GatewayClosed("WebSocket accept key mismatch")
+            raise GatewayClosed("Clé d'acceptation WebSocket invalide")
         self.sock.settimeout(1.0)
 
     def _read_headers(self) -> str:
@@ -68,10 +66,10 @@ class _WebSocket:
         while b"\r\n\r\n" not in data:
             chunk = self.sock.recv(4096)
             if not chunk:
-                raise GatewayClosed("Connection closed during handshake")
+                raise GatewayClosed("Connexion fermée pendant l'établissement de la connexion WebSocket")
             data.extend(chunk)
             if len(data) > 65536:
-                raise GatewayClosed("WebSocket handshake headers too large")
+                raise GatewayClosed("En-têtes de la réponse WebSocket trop volumineux")
         head, rest = bytes(data).split(b"\r\n\r\n", 1)
         self._buffer = rest
         return head.decode("latin1")
@@ -116,12 +114,12 @@ class _WebSocket:
             if frame is None:
                 chunk = self.sock.recv(65536)
                 if not chunk:
-                    raise GatewayClosed("WebSocket connection closed")
+                    raise GatewayClosed("Connexion WebSocket fermée")
                 self._buffer += chunk
                 continue
             fin, opcode, payload = frame
             if opcode == 8:
-                raise GatewayClosed("Discord closed the gateway connection")
+                raise GatewayClosed("Discord a fermé la connexion de la passerelle")
             if opcode == 9:
                 self._send_frame(payload, 10)
                 continue
@@ -162,7 +160,6 @@ class _WebSocket:
             self.sock.close()
         except Exception:
             pass
-
 
 class DiscordGateway:
     def __init__(self, client, on_interaction, logger) -> None:
@@ -209,7 +206,7 @@ class DiscordGateway:
             except Exception as exc:
                 if self._stop.is_set():
                     break
-                self.logger.warning(f"Discord gateway disconnected: {exc}")
+                self.logger.warning(f"Passerelle Discord déconnectée : {exc}")
                 self._stop.wait(delay)
                 delay = min(delay * 1.8, 30.0)
 
@@ -226,7 +223,7 @@ class DiscordGateway:
                 now = time.monotonic()
                 if heartbeat_interval is not None and next_heartbeat is not None and now >= next_heartbeat:
                     if not acked:
-                        raise GatewayClosed("Discord gateway heartbeat was not acknowledged")
+                        raise GatewayClosed("Aucune réponse au heartbeat de la passerelle Discord")
                     ws.send_json({"op": 1, "d": self._sequence})
                     acked = False
                     next_heartbeat = now + heartbeat_interval
@@ -265,17 +262,17 @@ class DiscordGateway:
                 elif op == 1:
                     ws.send_json({"op": 1, "d": self._sequence})
                 elif op == 7:
-                    raise GatewayClosed("Discord requested reconnect")
+                    raise GatewayClosed("Discord demande une reconnexion")
                 elif op == 9:
-                    raise GatewayClosed("Discord invalidated the gateway session")
+                    raise GatewayClosed("Session de la passerelle Discord invalide")
                 elif op == 0 and payload.get("t") == "READY":
                     user = payload.get("d", {}).get("user", {})
-                    self.logger.info(f"Discord gateway ready as {user.get('username', 'bot')}")
+                    self.logger.info(f"Passerelle Discord prête (utilisateur : {user.get('username', 'bot')})")
                 elif op == 0 and payload.get("t") == "INTERACTION_CREATE":
                     try:
                         self.on_interaction(payload.get("d", {}))
                     except Exception as exc:
-                        self.logger.error(f"Discord interaction handler failed: {exc}")
+                        self.logger.error(f"Échec du gestionnaire d'interaction Discord : {exc}")
         finally:
             ws.close()
             if self._ws is ws:
