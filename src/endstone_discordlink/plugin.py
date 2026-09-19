@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import secrets
 import shutil
 import string
@@ -24,7 +26,6 @@ from .storage import LinkRecord, LinkStorage
 PREFIX = "§9§lDiscordLink§r §8»§r"
 SERVICE_NAME = "discordlink.links.v1"
 
-
 @dataclass(frozen=True)
 class Settings:
     token: str
@@ -49,7 +50,6 @@ class Settings:
     enable_factions: bool
     enable_economy: bool
 
-
 @dataclass(frozen=True)
 class ProfileContext:
     primary_group: str
@@ -57,7 +57,6 @@ class ProfileContext:
     faction: str
     faction_rank: str
     balance: float | None
-
 
 class DiscordListener:
     def __init__(self, plugin: "DiscordLinkPlugin") -> None:
@@ -76,18 +75,17 @@ class DiscordListener:
             return
         self.plugin.server.scheduler.run_task(self.plugin, self.plugin.log_integrations, delay=20)
 
-
 class DiscordLinkPlugin(Plugin):
     api_version = "0.11"
     version = "2.2.3"
-    description = "Discord Components V2 verification and role sync for Endstone"
+    description = "Vérification Discord Components V2 et synchronisation des rôles pour Endstone"
     authors: ClassVar[list[str]] = ["KyroMC"]
     prefix = "DiscordLink"
     soft_depend: ClassVar[list[str]] = ["stoneperms", "pureperms", "zfactions", "bedrockeconomy", "kyromc"]
 
     commands: ClassVar[dict[str, Any]] = {
         "link": {
-            "description": "Link your Minecraft account to Discord",
+            "description": "Lie ton compte Minecraft à Discord",
             "aliases": ["discord"],
             "usages": [
                 "/link",
@@ -98,7 +96,7 @@ class DiscordLinkPlugin(Plugin):
             "permissions": ["discordlink.command.link"],
         },
         "discordlinkadmin": {
-            "description": "Administer DiscordLink",
+            "description": "Administrer DiscordLink",
             "aliases": ["dlinkadmin", "discordadmin", "dauth"],
             "usages": [
                 "/discordlinkadmin",
@@ -113,13 +111,13 @@ class DiscordLinkPlugin(Plugin):
         },
     }
     permissions: ClassVar[dict[str, Any]] = {
-        "discordlink.command.link": {"description": "Use DiscordLink account linking", "default": True},
-        "discordlink.command.admin": {"description": "Administer DiscordLink", "default": "op"},
+        "discordlink.command.link": {"description": "Utiliser la liaison de compte DiscordLink", "default": True},
+        "discordlink.command.admin": {"description": "Administrer DiscordLink", "default": "op"},
     }
 
     def __init__(self) -> None:
         super().__init__()
-        self.settings = Settings("", "", "", "Minecraft Server", "", True, True, True, True, "", True, 60, 6, 600, 5, 60, False, True, True, True, True)
+        self.settings = Settings("", "", "", "Serveur Minecraft", "", True, True, True, True, "", True, 60, 6, 600, 5, 60, False, True, True, True, True)
         self.storage = LinkStorage(Path("discordlink.db"))
         self.discord = DiscordClient("", "")
         self.integrations = IntegrationResolver(self)
@@ -133,7 +131,6 @@ class DiscordLinkPlugin(Plugin):
         self._last_periodic_sync = 0.0
         self._runtime_generation = 0
 
-
     def _migrate_legacy_data(self) -> None:
         target = Path(self.data_folder)
         target.mkdir(parents=True, exist_ok=True)
@@ -146,12 +143,12 @@ class DiscordLinkPlugin(Plugin):
         if not target_config.exists() and legacy_config.exists():
             text = legacy_config.read_text(encoding="utf-8").replace("DiscordAuth", "DiscordLink")
             target_config.write_text(text, encoding="utf-8")
-            self.logger.info("Migrated DiscordAuth config to DiscordLink")
+            self.logger.info("Migration de la configuration DiscordAuth vers DiscordLink")
         if not target_db.exists():
             source = legacy_db if legacy_db.exists() else local_legacy_db
             if source.exists():
                 shutil.copy2(source, target_db)
-                self.logger.info("Migrated DiscordAuth database to DiscordLink")
+                self.logger.info("Migration de la base de données DiscordAuth vers DiscordLink")
 
     @property
     def gateway_running(self) -> bool:
@@ -184,7 +181,7 @@ class DiscordLinkPlugin(Plugin):
         except Exception:
             pass
         self._executor.shutdown(wait=False, cancel_futures=True)
-        self.logger.info("DiscordLink disabled")
+        self.logger.info("DiscordLink désactivé")
 
     def on_command(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
         if command.name == "link":
@@ -195,7 +192,7 @@ class DiscordLinkPlugin(Plugin):
 
     def _link_command(self, sender: CommandSender, args: list[str]) -> bool:
         if not isinstance(sender, Player):
-            sender.send_message(f"{PREFIX} §cThis command must be used in-game.")
+            sender.send_message(f"{PREFIX} §cCette commande doit être utilisée en jeu.")
             return True
         if not args:
             self.forms.open_player(sender)
@@ -208,7 +205,7 @@ class DiscordLinkPlugin(Plugin):
         elif action == "sync":
             self.sync_player(sender, notify=True)
         else:
-            sender.send_message(f"{PREFIX} §7Use §f/link §7to open the Discord linking menu.")
+            sender.send_message(f"{PREFIX} §7Utilise §f/link §7pour ouvrir le menu de liaison Discord.")
         return True
 
     def _admin_command(self, sender: CommandSender, args: list[str]) -> bool:
@@ -229,28 +226,28 @@ class DiscordLinkPlugin(Plugin):
         elif action == "sync" and len(args) >= 2:
             target = self.server.get_player(args[1])
             if target is None:
-                sender.send_message(f"{PREFIX} §cThat player must be online to sync provider data.")
+                sender.send_message(f"{PREFIX} §cCe joueur doit être en ligne pour synchroniser les données du fournisseur.")
             else:
                 ok = self.sync_player(target, notify=False)
-                sender.send_message(f"{PREFIX} {'§aSync queued.' if ok else '§cPlayer is not linked or Discord is not configured.'}")
+                sender.send_message(f"{PREFIX} {'§aSynchronisation en attente.' if ok else '§cLe joueur n\\'est pas lié ou Discord n\\'est pas configuré.'}")
         elif action == "unlink" and len(args) >= 2:
             self.admin_unlink(sender, args[1])
         else:
-            sender.send_message(f"{PREFIX} §cUnknown admin action.")
+            sender.send_message(f"{PREFIX} §cAction admin inconnue.")
         return True
 
     def start_link(self, player: Player, discord_id: str) -> None:
         discord_id = discord_id.strip()
         if not _valid_discord_id(discord_id):
-            player.send_message(f"{PREFIX} §cEnter a valid Discord user ID containing 17-20 digits.")
+            player.send_message(f"{PREFIX} §cEntre un ID utilisateur Discord valide contenant 17 à 20 chiffres.")
             return
         if not self.discord.configured:
-            player.send_message(f"{PREFIX} §cDiscord linking is not configured by the server owner yet.")
+            player.send_message(f"{PREFIX} §cLa liaison Discord n'est pas encore configurée par le propriétaire du serveur.")
             return
         player_uuid = str(player.unique_id)
         current = self.storage.get_link(player_uuid)
         if current is not None and not self.settings.allow_relink:
-            player.send_message(f"{PREFIX} §eYour account is already linked. Unlink it first if you need to change Discord accounts.")
+            player.send_message(f"{PREFIX} §eTon compte est déjà lié. Délie-le d'abord si tu dois changer de compte Discord.")
             return
         code = _code(self.settings.code_length)
         pending = self.storage.create_pending(
@@ -264,16 +261,16 @@ class DiscordLinkPlugin(Plugin):
         )
         if not pending.ok:
             messages = {
-                "discord-in-use": "§cThat Discord account is already linked to another player.",
-                "discord-pending": "§cThat Discord account already has an active verification request.",
-                "cooldown": "§ePlease wait before generating another verification code.",
+                "discord-in-use": "§cCe compte Discord est déjà lié à un autre joueur.",
+                "discord-pending": "§cCe compte Discord a déjà une demande de vérification active.",
+                "cooldown": "§eMerci de patienter avant de générer un autre code de vérification.",
             }
-            player.send_message(f"{PREFIX} {messages.get(pending.reason, '§cCould not create a verification request.')}")
+            player.send_message(f"{PREFIX} {messages.get(pending.reason, '§cImpossible de créer une demande de vérification.')}")
             return
         player_name = player.name
         dm_enabled = bool(self.ui_value("dm", "enabled", True))
         dm_content = self._verification_dm_content(player_name, code)
-        player.send_message(f"{PREFIX} §bChecking Discord ID…")
+        player.send_message(f"{PREFIX} §bVérification de l'ID Discord…")
 
         def job():
             if self.settings.require_guild_membership or dm_enabled:
@@ -294,19 +291,19 @@ class DiscordLinkPlugin(Plugin):
                 self.storage.cancel_pending(player_uuid)
                 if online is not None:
                     if isinstance(error, DiscordApiError) and error.status == 404:
-                        online.send_message(f"{PREFIX} §cThat Discord account is not in the configured Discord server.")
+                        online.send_message(f"{PREFIX} §cCe compte Discord n'est pas dans le serveur Discord configuré.")
                     else:
-                        online.send_message(f"{PREFIX} §cDiscord could not validate that account. Please try again or contact staff.")
-                self.logger.warning(f"Discord account validation failed for {player_name}: {error}")
+                        online.send_message(f"{PREFIX} §cDiscord n'a pas pu valider ce compte. Réessaye ou contacte le staff.")
+                self.logger.warning(f"Échec de la validation du compte Discord pour {player_name} : {error}")
                 return
             if online is None:
                 return
             dm_sent, dm_error = result if isinstance(result, tuple) else (False, None)
             if dm_enabled and dm_sent:
-                online.send_message(f"{PREFIX} §aVerification code sent to your Discord DMs.")
+                online.send_message(f"{PREFIX} §aCode de vérification envoyé dans tes messages privés Discord.")
             elif dm_enabled and dm_error is not None:
-                online.send_message(f"{PREFIX} §eI couldn't DM you. §7Use the code shown here instead.")
-                self.logger.info(f"Could not DM verification code to {discord_id} for {player_name}: {dm_error}")
+                online.send_message(f"{PREFIX} §eJe n'ai pas pu t'envoyer un message privé. §7Utilise le code affiché ici à la place.")
+                self.logger.info(f"Impossible d'envoyer un message privé avec le code de vérification à {discord_id} pour {player_name} : {dm_error}")
             self.refresh_profile(online)
             self.forms.show_code(online, code)
 
@@ -320,42 +317,42 @@ class DiscordLinkPlugin(Plugin):
             "server_name": self.settings.server_name,
             "expiry_minutes": str(expiry_minutes),
         }
-        title = str(self.ui_value("dm", "title", "## 🔐 DiscordLink Verification"))
-        description = str(self.ui_value("dm", "description", "A Minecraft account link was requested for **{player}** on **{server_name}**."))
-        expiry = str(self.ui_value("dm", "expiry", "Expires in **{expiry_minutes} minutes**."))
-        footer = str(self.ui_value("dm", "footer", "-# If you did not request this, ignore this message."))
+        title = str(self.ui_value("dm", "title", "## 🔐 Vérification DiscordLink"))
+        description = str(self.ui_value("dm", "description", "Une liaison de compte Minecraft a été demandée pour **{player}** sur **{server_name}**."))
+        expiry = str(self.ui_value("dm", "expiry", "Expire dans **{expiry_minutes} minutes**."))
+        footer = str(self.ui_value("dm", "footer", "-# Si tu n'as pas demandé cela, ignore ce message."))
         parts = [title, description, f"```text\n{code}\n```", expiry, footer]
         return "\n\n".join(_format_text(part, values) for part in parts if part.strip())
 
     def send_link_status(self, player: Player) -> None:
         link = self.storage.get_link(str(player.unique_id))
         if link is None:
-            player.send_message(f"{PREFIX} §eNot linked. §7Use §f/link§7 to start.")
+            player.send_message(f"{PREFIX} §eNon lié. §7Utilise §f/link§7 pour commencer.")
         else:
-            player.send_message(f"{PREFIX} §aLinked. §7Discord roles sync automatically.")
+            player.send_message(f"{PREFIX} §aLié. §7Les rôles Discord se synchronisent automatiquement.")
 
     def unlink_player(self, player: Player) -> None:
         player_uuid = str(player.unique_id)
         previous_roles = self.storage.get_managed_roles(player_uuid)
         link = self.storage.unlink(player_uuid)
         if link is None:
-            player.send_message(f"{PREFIX} §eYour account is not linked.")
+            player.send_message(f"{PREFIX} §eTon compte n'est pas lié.")
             return
         self.queue_remove_roles(link, previous_roles)
-        player.send_message(f"{PREFIX} §aUnlinked. §7Managed Discord roles are being removed.")
+        player.send_message(f"{PREFIX} §aDélié. §7Les rôles Discord gérés sont en cours de suppression.")
 
     def admin_unlink(self, sender: CommandSender, identifier: str) -> None:
         found = self.storage.find_link(identifier)
         if found is None:
-            sender.send_message(f"{PREFIX} §cNo linked account matched §f{identifier}§c.")
+            sender.send_message(f"{PREFIX} §cAucun compte lié ne correspond à §f{identifier}§c.")
             return
         previous_roles = self.storage.get_managed_roles(found.player_uuid)
         link = self.storage.unlink(found.player_uuid)
         if link is None:
-            sender.send_message(f"{PREFIX} §cNo linked account matched §f{identifier}§c.")
+            sender.send_message(f"{PREFIX} §cAucun compte lié ne correspond à §f{identifier}§c.")
             return
         self.queue_remove_roles(link, previous_roles)
-        sender.send_message(f"{PREFIX} §aUnlinked §f{link.player_name} §7from Discord §f{link.discord_id}§7.")
+        sender.send_message(f"{PREFIX} §aDélié §f{link.player_name} §7de Discord §f{link.discord_id}§7.")
 
     def finalize_discord_verification(
         self,
@@ -379,14 +376,14 @@ class DiscordLinkPlugin(Plugin):
 
             def edit_done(_result, error: Exception | None) -> None:
                 if error is not None:
-                    self.logger.warning(f"Could not update Discord verification result for {link.player_name}: {error}")
+                    self.logger.warning(f"Impossible de mettre à jour le résultat de vérification Discord pour {link.player_name} : {error}")
 
             self._submit(edit_job, edit_done)
 
         def task() -> None:
             player = self._online_player(link.player_uuid, link.player_name)
             if player is not None:
-                player.send_message(f"{PREFIX} §aLinked successfully. §7Discord roles are syncing automatically.")
+                player.send_message(f"{PREFIX} §aLiaison réussie. §7Les rôles Discord se synchronisent automatiquement.")
                 self._sync_player(player, notify=False, callback=lambda result, error: finish(result, error, True))
                 return
             self._sync_verified_role_only(link, lambda result, error: finish(result, error, False))
@@ -394,7 +391,7 @@ class DiscordLinkPlugin(Plugin):
         try:
             self.server.scheduler.run_task(self, task)
         except Exception as exc:
-            self.logger.warning(f"Could not schedule post-verification sync for {link.player_name}: {exc}")
+            self.logger.warning(f"Impossible de planifier la synchronisation post-vérification pour {link.player_name} : {exc}")
             finish(None, exc, False)
 
     def refresh_profile(self, player: Player) -> ProfileContext:
@@ -402,7 +399,7 @@ class DiscordLinkPlugin(Plugin):
         groups = set()
         if self.settings.enable_stoneperms:
             groups |= snapshot.stoneperms_groups
-            if snapshot.stoneperms_primary:
+            if snapshot.stoneperms_unique:
                 groups.add(snapshot.stoneperms_primary)
         if self.settings.enable_pureperms:
             groups |= snapshot.pureperms_groups
@@ -464,9 +461,9 @@ class DiscordLinkPlugin(Plugin):
         link = self.storage.get_link(str(player.unique_id))
         if link is None or not self.discord.configured:
             if notify:
-                player.send_message(f"{PREFIX} §eLink your Discord account first.")
+                player.send_message(f"{PREFIX} §eLie ton compte Discord d'abord.")
             if callback is not None:
-                callback(None, RuntimeError("player is not linked or Discord is not configured"))
+                callback(None, RuntimeError("Le joueur n'est pas lié ou Discord n'est pas configuré"))
             return False
         snapshot = self.integrations.snapshot(player)
         self._cache_snapshot(player, snapshot)
@@ -476,7 +473,7 @@ class DiscordLinkPlugin(Plugin):
         managed |= previous_managed
         player_name = player.name
         if notify:
-            player.send_message(f"{PREFIX} §bRefreshing Discord roles…")
+            player.send_message(f"{PREFIX} §bRafraîchissement des rôles Discord…")
 
         def job():
             return self.discord.sync_roles(
@@ -489,9 +486,9 @@ class DiscordLinkPlugin(Plugin):
         def done(result, error: Exception | None) -> None:
             online = self._online_player(player_uuid, player_name)
             if error is not None:
-                self.logger.warning(f"Role sync failed for {player_name}: {error}")
+                self.logger.warning(f"Échec de la synchronisation des rôles pour {player_name} : {error}")
                 if notify and online is not None:
-                    online.send_message(f"{PREFIX} §cRole sync failed. §7Ask staff to check the bot role hierarchy and permissions.")
+                    online.send_message(f"{PREFIX} §cÉchec de la synchronisation des rôles. §7Demande au staff de vérifier la hiérarchie et les permissions des rôles du bot.")
                 if callback is not None:
                     callback(result, error)
                 return
@@ -501,7 +498,7 @@ class DiscordLinkPlugin(Plugin):
                 self.storage.set_managed_roles(player_uuid, previous_managed | set(desired))
             if notify and online is not None:
                 changed = len(result.added) + len(result.removed)
-                online.send_message(f"{PREFIX} §aRoles refreshed. §7{changed} change(s).")
+                online.send_message(f"{PREFIX} §aRôles rafraîchis. §7{changed} changement(s).")
             if callback is not None:
                 callback(result, None)
 
@@ -539,7 +536,7 @@ class DiscordLinkPlugin(Plugin):
             if self.sync_player(player, notify=False):
                 queued += 1
         if notify_sender is not None:
-            notify_sender.send_message(f"{PREFIX} §aQueued role sync for §f{queued} §aonline linked player(s).")
+            notify_sender.send_message(f"{PREFIX} §aSynchronisation des rôles en attente pour §f{queued} §ajoueur(s) lié(s) en ligne.")
 
     def queue_remove_roles(self, link: LinkRecord, extra_roles: set[str] | None = None, clear_state: bool = True) -> None:
         if not self.discord.configured:
@@ -550,7 +547,7 @@ class DiscordLinkPlugin(Plugin):
 
         def done(_result, error: Exception | None) -> None:
             if error is not None:
-                self.logger.warning(f"Could not remove managed roles for {link.player_name}: {error}")
+                self.logger.warning(f"Impossible de supprimer les rôles gérés pour {link.player_name} : {error}")
                 return
             if clear_state:
                 self.storage.clear_managed_roles(link.player_uuid)
@@ -563,26 +560,26 @@ class DiscordLinkPlugin(Plugin):
     def queue_discord_panel(self, channel_id: str) -> None:
         def done(_result, error: Exception | None) -> None:
             if error is not None:
-                self.logger.warning(f"Could not send Discord verification panel to {channel_id}: {error}")
+                self.logger.warning(f"Impossible d'envoyer le panneau de vérification Discord à {channel_id} : {error}")
 
         self._submit(lambda: self.discord_ui.send_panel(channel_id), done)
 
     def send_panel_from_minecraft(self, sender: CommandSender, channel_id: str | None) -> None:
         target = (channel_id or self.settings.verification_channel_id).strip()
         if not target:
-            sender.send_message(f"{PREFIX} §cSet discord.verification_channel_id or provide a channel ID.")
+            sender.send_message(f"{PREFIX} §cDéfinis discord.verification_channel_id ou fournis un ID de canal.")
             return
         if not self.discord.configured:
-            sender.send_message(f"{PREFIX} §cDiscord bot is not configured.")
+            sender.send_message(f"{PREFIX} §cLe bot Discord n'est pas configuré.")
             return
-        sender.send_message(f"{PREFIX} §7Sending the Components V2 verification panel…")
+        sender.send_message(f"{PREFIX} §7Envoi du panneau de vérification Components V2…")
 
         def done(result, error: Exception | None) -> None:
             if error is not None:
-                sender.send_message(f"{PREFIX} §cCould not send the Discord panel: {error}")
+                sender.send_message(f"{PREFIX} §cImpossible d'envoyer le panneau Discord : {error}")
                 return
             message_id = result.get("id", "") if isinstance(result, dict) else ""
-            sender.send_message(f"{PREFIX} §aVerification panel sent to Discord channel §f{target}§a. §7Message ID: §f{message_id or 'unknown'}")
+            sender.send_message(f"{PREFIX} §aPanneau de vérification envoyé au canal Discord §f{target}§a. §7ID du message : §f{message_id or 'inconnu'}")
 
         self._submit(lambda: self.discord_ui.send_panel(target), done)
 
@@ -592,17 +589,17 @@ class DiscordLinkPlugin(Plugin):
             self._load_settings()
             self._restart_discord_runtime()
             if sender is not None:
-                sender.send_message(f"{PREFIX} §aConfiguration reloaded.")
+                sender.send_message(f"{PREFIX} §aConfiguration rechargée.")
             self.log_integrations()
         except Exception as exc:
-            self.logger.error(f"Failed to reload config: {exc}")
+            self.logger.error(f"Échec du rechargement de la configuration : {exc}")
             if sender is not None:
-                sender.send_message(f"{PREFIX} §cConfig reload failed: {exc}")
+                sender.send_message(f"{PREFIX} §cÉchec du rechargement de la configuration : {exc}")
 
     def log_integrations(self) -> None:
         status = self.integrations.detection_status()
-        summary = ", ".join(f"{name}={'yes' if value else 'no'}" for name, value in status.items())
-        self.logger.info(f"Optional integrations: {summary}")
+        summary = ", ".join(f"{name}={'oui' if value else 'non'}" for name, value in status.items())
+        self.logger.info(f"Intégrations optionnelles : {summary}")
 
     def ui_value(self, section: str, key: str, default):
         ui = _table(self.config, "ui")
@@ -715,12 +712,12 @@ class DiscordLinkPlugin(Plugin):
         self.sync_all_online()
 
     def _send_admin_status(self, sender: CommandSender) -> None:
-        sender.send_message(f"{PREFIX} §7Linked accounts: §f{self.storage.count_links()}")
-        sender.send_message(f"{PREFIX} §7Pending codes: §f{self.storage.count_pending()}")
-        sender.send_message(f"{PREFIX} §7Discord bot: {'§aconfigured' if self.discord.configured else '§cnot configured'}")
-        sender.send_message(f"{PREFIX} §7Discord gateway: {'§arunning' if self.gateway_running else '§cstopped'}")
+        sender.send_message(f"{PREFIX} §7Comptes liés : §f{self.storage.count_links()}")
+        sender.send_message(f"{PREFIX} §7Codes en attente : §f{self.storage.count_pending()}")
+        sender.send_message(f"{PREFIX} §7Bot Discord : {'§aConfiguré' if self.discord.configured else '§cNon configuré'}")
+        sender.send_message(f"{PREFIX} §7Passerelle Discord : {'§aActive' if self.gateway_running else '§cInactive'}")
         for name, ok in self.integrations.detection_status().items():
-            sender.send_message(f"{PREFIX} §7{name}: {'§aDetected' if ok else '§8Not detected'}")
+            sender.send_message(f"{PREFIX} §7{name} : {'§aDétecté' if ok else '§8Non détecté'}")
 
     def _load_settings(self) -> None:
         root = self.config
@@ -733,7 +730,7 @@ class DiscordLinkPlugin(Plugin):
             token=str(discord.get("bot_token", "")),
             guild_id=str(discord.get("guild_id", "")),
             verification_channel_id=str(discord.get("verification_channel_id", "")),
-            server_name=str(server.get("name", "Minecraft Server")),
+            server_name=str(server.get("name", "Serveur Minecraft")),
             server_invite_url=str(server.get("discord_invite", "")),
             require_guild_membership=bool(discord.get("require_guild_membership", True)),
             restrict_to_verification_channel=bool(discord.get("restrict_to_verification_channel", True)),
@@ -762,7 +759,7 @@ class DiscordLinkPlugin(Plugin):
             self._gateway.stop()
             self._gateway = None
         if not self.discord.configured:
-            self.logger.warning("Discord bot is not configured yet. Set discord.bot_token and discord.guild_id in config.toml.")
+            self.logger.warning("Le bot Discord n'est pas encore configuré. Défini discord.bot_token et discord.guild_id dans config.toml.")
             return
 
         client = self.discord
@@ -781,11 +778,11 @@ class DiscordLinkPlugin(Plugin):
             if generation != self._runtime_generation:
                 return
             if error is not None:
-                self.logger.error(f"Discord bot setup failed: {error}")
+                self.logger.error(f"Échec de la configuration du bot Discord : {error}")
                 return
             user, application_id = result
             username = user.get("username", "bot") if isinstance(user, dict) else "bot"
-            self.logger.info(f"Discord bot authenticated as {username}; application id={application_id or 'unknown'}")
+            self.logger.info(f"Bot Discord authentifié en tant que {username} ; ID de l'application={application_id or 'inconnu'}")
             if settings.gateway_enabled:
                 self._gateway = DiscordGateway(client, controller.handle, self.logger)
                 self._gateway.start()
@@ -826,11 +823,9 @@ class DiscordLinkPlugin(Plugin):
             pass
         return None
 
-
 def _table(root: dict, key: str) -> dict:
     value = root.get(key, {})
     return value if isinstance(value, dict) else {}
-
 
 def _xuid(player: Player) -> str | None:
     try:
@@ -839,17 +834,14 @@ def _xuid(player: Player) -> str | None:
         value = ""
     return value or None
 
-
 def _valid_discord_id(value: str) -> bool:
     return value.isdigit() and 17 <= len(value) <= 20
-
 
 def _format_text(value: str, values: dict[str, str]) -> str:
     try:
         return value.format_map(values)
     except (KeyError, ValueError):
         return value
-
 
 def _code(length: int) -> str:
     return "".join(secrets.choice(string.digits) for _ in range(length))
