@@ -3,7 +3,6 @@ from __future__ import annotations
 import re
 from urllib.parse import quote
 
-
 class DiscordInteractionController:
     def __init__(self, plugin) -> None:
         self.plugin = plugin
@@ -13,17 +12,17 @@ class DiscordInteractionController:
             {
                 "name": "verify",
                 "type": 1,
-                "description": self.plugin.ui_value("commands", "verify_description", "Verify and link your Minecraft account"),
+                "description": self.plugin.ui_value("commands", "verify_description", "Vérifie et lie ton compte Minecraft"),
             },
             {
                 "name": "unlink",
                 "type": 1,
-                "description": self.plugin.ui_value("commands", "unlink_description", "Unlink your Minecraft account"),
+                "description": self.plugin.ui_value("commands", "unlink_description", "Délie ton compte Minecraft"),
             },
             {
                 "name": "linkpanel",
                 "type": 1,
-                "description": self.plugin.ui_value("commands", "panel_description", "Send the DiscordLink verification panel"),
+                "description": self.plugin.ui_value("commands", "panel_description", "Envoyer le panneau de vérification DiscordLink"),
                 "default_member_permissions": "32",
             },
         ]
@@ -46,16 +45,16 @@ class DiscordInteractionController:
         return self.plugin.discord.send_components_message(channel_id, self.panel_components())
 
     def panel_components(self) -> list[dict]:
-        title = self.plugin.ui_value("panel", "title", "## 🔗 Minecraft Account Link")
-        description = self.plugin.ui_value("panel", "description", "Link your Minecraft account to Discord in under a minute.")
+        title = self.plugin.ui_value("panel", "title", "## 🔗 Lien de compte Minecraft")
+        description = self.plugin.ui_value("panel", "description", "Lie ton compte Minecraft à Discord en moins d'une minute.")
         instructions = self.plugin.ui_value(
             "panel",
             "instructions",
-            "**1.** Run `/link` in Minecraft\n**2.** Enter your Discord ID\n**3.** Press **Verify** and enter the 6-digit code",
+            "**1.** Exécute `/link` dans Minecraft\n**2.** Entre ton ID Discord\n**3.** Appuie sur **Vérifier** et entre le code à 6 chiffres",
         )
-        footer = self.plugin.ui_value("panel", "footer", "-# Your code is temporary and locked to your Discord account.")
+        footer = self.plugin.ui_value("panel", "footer", "-# Les codes sont temporaires et liés à ton compte Discord.")
         if str(description).strip() == "Connect your Minecraft and Discord accounts securely using a temporary code generated in-game.":
-            description = "Link your Minecraft account to Discord in under a minute."
+            description = "Lie ton compte Minecraft à Discord en moins d'une minute."
         instructions = re.sub(r"\s*Once linked,\s*your configured Minecraft ranks,\s*faction roles and economy roles can sync automatically\.\s*", "", str(instructions), flags=re.IGNORECASE).strip()
         thumbnail = self.plugin.ui_value("panel", "thumbnail_url", "")
         inner = [{"type": 10, "content": title}]
@@ -64,7 +63,7 @@ class DiscordInteractionController:
                 {
                     "type": 9,
                     "components": [{"type": 10, "content": description}],
-                    "accessory": {"type": 11, "media": {"url": thumbnail}, "description": "Discord verification"},
+                    "accessory": {"type": 11, "media": {"url": thumbnail}, "description": "Vérification Discord"},
                 }
             )
         else:
@@ -80,14 +79,14 @@ class DiscordInteractionController:
                             "type": 2,
                             "style": 1,
                             "custom_id": "discordlink:verify",
-                            "label": self.plugin.ui_value("panel", "verify_button", "Verify"),
+                            "label": self.plugin.ui_value("panel", "verify_button", "Vérifier"),
                             "emoji": {"name": "✅"},
                         },
                         {
                             "type": 2,
                             "style": 4,
                             "custom_id": "discordlink:unlink",
-                            "label": self.plugin.ui_value("panel", "unlink_button", "Unlink"),
+                            "label": self.plugin.ui_value("panel", "unlink_button", "Délier"),
                             "emoji": {"name": "🔓"},
                         },
                     ],
@@ -101,13 +100,13 @@ class DiscordInteractionController:
         added = len(getattr(sync_result, "added", ()) or ()) if sync_result is not None else 0
         removed = len(getattr(sync_result, "removed", ()) or ()) if sync_result is not None else 0
         if sync_error is not None:
-            sync_status = "⚠️ Linked • role sync needs staff attention"
+            sync_status = "⚠️ Lié • La synchronisation des rôles nécessite l'attention d'un administrateur"
         elif not player_online:
-            sync_status = "⏳ Linked • full role sync runs on your next Minecraft join"
+            sync_status = "⏳ Lié • La synchronisation complète des rôles s'effectuera à ta prochaine connexion Minecraft"
         elif added or removed:
-            sync_status = f"✅ Synced automatically • +{added} / -{removed} role changes"
+            sync_status = f"✅ Synchronisé automatiquement • +{added} / -{removed} changements de rôles"
         else:
-            sync_status = "✅ Synced automatically • roles already up to date"
+            sync_status = "✅ Synchronisé automatiquement • Les rôles sont déjà à jour"
         context = self.plugin.placeholder_context(
             link,
             {
@@ -126,16 +125,16 @@ class DiscordInteractionController:
         return {"components": components}
 
     def _success_body(self, context: dict[str, str]) -> str:
-        title = _format(self.plugin.ui_value("success", "title", "## ✅ Account linked"), context)
+        title = _format(self.plugin.ui_value("success", "title", "## ✅ Compte lié"), context)
         default_fields = [
             "Minecraft|`{player}`",
             "Discord|{discord_mention}",
-            "Group|`{group}`",
+            "Groupe|`{group}`",
             "Faction|`{faction}`",
-            "Faction Rank|`{faction_rank}`",
-            "Balance|`{balance}`",
+            "Rang dans la faction|`{faction_rank}`",
+            "Solde|`{balance}`",
             "XUID|`{xuid}`",
-            "Verified|{verified_timestamp}",
+            "Vérifié|{verified_timestamp}",
         ]
         fields = self.plugin.ui_value("success", "fields", default_fields)
         hide_empty = bool(self.plugin.ui_value("success", "hide_empty_fields", True))
@@ -161,13 +160,13 @@ class DiscordInteractionController:
             body = self.plugin.ui_value(
                 "success",
                 "body",
-                "## ✅ Account linked\n**Minecraft:** `{player}`\n**Discord:** {discord_mention}\n**Group:** `{group}`\n**Faction:** `{faction}`\n**Balance:** `{balance}`\n\n{role_sync_status}",
+                "## ✅ Compte lié\n**Minecraft :** `{player}`\n**Discord :** {discord_mention}\n**Groupe :** `{group}`\n**Faction :** `{faction}`\n**Solde :** `{balance}`\n\n{role_sync_status}",
             )
             return _format(body, context)
         status = _format(self.plugin.ui_value("success", "sync_line", "{role_sync_status}"), context).strip()
         if status:
             lines.extend(["", status])
-        footer = _format(self.plugin.ui_value("success", "footer", "-# Role syncing is automatic while you play."), context).strip()
+        footer = _format(self.plugin.ui_value("success", "footer", "-# La synchronisation des rôles est automatique pendant que tu joues."), context).strip()
         if footer:
             lines.append(footer)
         return "\n".join(lines)
@@ -183,13 +182,13 @@ class DiscordInteractionController:
             return
         if name == "linkpanel":
             if not self._is_admin(interaction):
-                self._ephemeral(interaction, "## ❌ No permission\nYou need **Manage Server** to send the verification panel.", "error")
+                self._ephemeral(interaction, "## ❌ Permission refusée\nTu as besoin de **Gérer le serveur** pour envoyer le panneau de vérification.", "error")
                 return
             channel_id = self.plugin.settings.verification_channel_id or str(interaction.get("channel_id", ""))
             if not channel_id:
-                self._ephemeral(interaction, "## ❌ Channel unavailable\nI could not determine where to send the panel.", "error")
+                self._ephemeral(interaction, "## ❌ Canal indisponible\nJe n'ai pas pu déterminer où envoyer le panneau.", "error")
                 return
-            self._ephemeral(interaction, f"## ✅ Panel queued\nPosting the verification panel in <#{channel_id}>.", "success")
+            self._ephemeral(interaction, f"## ✅ Panneau en attente\nPublication du panneau de vérification dans <#{channel_id}>.", "success")
             self.plugin.queue_discord_panel(channel_id)
 
     def _component(self, interaction: dict, custom_id: str) -> None:
@@ -205,7 +204,7 @@ class DiscordInteractionController:
             self._unlink(interaction)
             return
         if custom_id in {"discordlink:unlink_cancel", "discordauth:unlink_cancel"}:
-            self._ephemeral(interaction, "## Cancelled\nYour Minecraft account is still linked.", "neutral")
+            self._ephemeral(interaction, "## Annulé\nTon compte Minecraft est toujours lié.", "neutral")
 
     def _modal(self, interaction: dict, custom_id: str) -> None:
         if custom_id not in {"discordlink:verify_modal", "discordauth:verify_modal"}:
@@ -213,24 +212,24 @@ class DiscordInteractionController:
         discord_id = _user_id(interaction)
         code = _find_component_value(interaction.get("data", {}).get("components", []), "discordlink:code") or _find_component_value(interaction.get("data", {}).get("components", []), "discordauth:code")
         if not discord_id:
-            self._ephemeral(interaction, "## ❌ Verification failed\nI could not identify your Discord account.", "error")
+            self._ephemeral(interaction, "## ❌ Vérification échouée\nJe n'ai pas pu identifier ton compte Discord.", "error")
             return
         result = self.plugin.storage.verify_pending_by_discord(discord_id, code.strip(), self.plugin.settings.max_attempts)
         if not result.ok or result.link is None:
             messages = {
-                "missing": "No active code exists for your Discord account. Run `/link` in Minecraft first.",
-                "expired": "That code expired. Run `/link` in Minecraft for a new one.",
-                "invalid": "That code is incorrect. Check the code shown in Minecraft.",
-                "attempts": "Too many incorrect attempts. Run `/link` in Minecraft for a new code.",
-                "discord-in-use": "This Discord account is already linked to another Minecraft account.",
+                "missing": "Aucun code actif n'existe pour ton compte Discord. Exécute `/link` dans Minecraft d'abord.",
+                "expired": "Ce code a expiré. Exécute `/link` dans Minecraft pour en obtenir un nouveau.",
+                "invalid": "Ce code est incorrect. Vérifie le code affiché dans Minecraft.",
+                "attempts": "Trop de tentatives incorrectes. Exécute `/link` dans Minecraft pour un nouveau code.",
+                "discord-in-use": "Ce compte Discord est déjà lié à un autre compte Minecraft.",
             }
-            self._ephemeral(interaction, f"## ❌ Verification failed\n{messages.get(result.reason, 'The verification request could not be completed.')}", "error")
+            self._ephemeral(interaction, f"## ❌ Vérification échouée\n{messages.get(result.reason, 'La demande de vérification n\'a pas pu être complétée.')}", "error")
             return
         user = ((interaction.get("member", {}) or {}).get("user", {}) or interaction.get("user", {}) or {})
         discord_username = str(user.get("global_name") or user.get("username") or "")
         application_id = str(interaction.get("application_id", ""))
         interaction_token = str(interaction.get("token", ""))
-        linking_body = self.plugin.ui_value("success", "linking_body", "## ✅ Code accepted\nLinking your account and syncing Discord roles…")
+        linking_body = self.plugin.ui_value("success", "linking_body", "## ✅ Code accepté\nLiaison de ton compte et synchronisation des rôles Discord…")
         components = self._card_components(str(linking_body), "success", "", include_unlink=False)
         self._response(interaction, {"type": 4, "data": {"flags": 32832, "components": components}})
         self.plugin.finalize_discord_verification(
@@ -247,12 +246,12 @@ class DiscordInteractionController:
             "type": 9,
             "data": {
                 "custom_id": "discordlink:verify_modal",
-                "title": self.plugin.ui_value("verify_modal", "title", "Verify Minecraft Account")[:45],
+                "title": self.plugin.ui_value("verify_modal", "title", "Vérifier le compte Minecraft")[:45],
                 "components": [
                     {
                         "type": 18,
-                        "label": self.plugin.ui_value("verify_modal", "label", "Verification code")[:45],
-                        "description": self.plugin.ui_value("verify_modal", "description", "Enter the code shown in Minecraft after /link.")[:100],
+                        "label": self.plugin.ui_value("verify_modal", "label", "Code de vérification")[:45],
+                        "description": self.plugin.ui_value("verify_modal", "description", "Entre le code affiché dans Minecraft après /link.")[:100],
                         "component": {
                             "type": 4,
                             "custom_id": "discordlink:code",
@@ -272,17 +271,17 @@ class DiscordInteractionController:
         discord_id = _user_id(interaction)
         link = self.plugin.storage.get_link_by_discord(discord_id) if discord_id else None
         if link is None:
-            self._ephemeral(interaction, "## ℹ️ Nothing to unlink\nYour Discord account is not linked to a Minecraft account.", "neutral")
+            self._ephemeral(interaction, "## ℹ️ Rien à délier\nTon compte Discord n'est pas lié à un compte Minecraft.", "neutral")
             return
         context = self.plugin.placeholder_context(link)
-        body = self.plugin.ui_value("unlink", "confirm_body", "## 🔓 Unlink account?\nUnlink **{player}** from {discord_mention}?")
+        body = self.plugin.ui_value("unlink", "confirm_body", "## 🔓 Délier le compte ?\nDélier **{player}** de {discord_mention} ?")
         components = self._card_components(_format(body, context), "unlink", "", include_unlink=False)
         components[0]["components"].append(
             {
                 "type": 1,
                 "components": [
-                    {"type": 2, "style": 4, "custom_id": "discordlink:unlink_confirm", "label": self.plugin.ui_value("unlink", "confirm_button", "Unlink")},
-                    {"type": 2, "style": 2, "custom_id": "discordlink:unlink_cancel", "label": self.plugin.ui_value("unlink", "cancel_button", "Cancel")},
+                    {"type": 2, "style": 4, "custom_id": "discordlink:unlink_confirm", "label": self.plugin.ui_value("unlink", "confirm_button", "Délier")},
+                    {"type": 2, "style": 2, "custom_id": "discordlink:unlink_cancel", "label": self.plugin.ui_value("unlink", "cancel_button", "Annuler")},
                 ],
             }
         )
@@ -292,16 +291,16 @@ class DiscordInteractionController:
         discord_id = _user_id(interaction)
         link = self.plugin.storage.get_link_by_discord(discord_id) if discord_id else None
         if link is None:
-            self._ephemeral(interaction, "## ℹ️ Nothing to unlink\nYour Discord account is not linked.", "neutral")
+            self._ephemeral(interaction, "## ℹ️ Rien à délier\nTon compte Discord n'est pas lié.", "neutral")
             return
         previous_roles = self.plugin.storage.get_managed_roles(link.player_uuid)
         removed = self.plugin.storage.unlink(link.player_uuid)
         if removed is None:
-            self._ephemeral(interaction, "## ❌ Unlink failed\nThe account link could not be removed.", "error")
+            self._ephemeral(interaction, "## ❌ Échec du délier\nLe lien du compte n'a pas pu être supprimé.", "error")
             return
         self.plugin.queue_remove_roles(removed, previous_roles)
         context = self.plugin.placeholder_context(removed)
-        body = self.plugin.ui_value("unlink", "success_body", "## ✅ Account unlinked\n**{player}** is no longer linked. Managed roles are being removed.")
+        body = self.plugin.ui_value("unlink", "success_body", "## ✅ Compte délié\n**{player}** n'est plus lié. Les rôles gérés sont en cours de suppression.")
         self._ephemeral(interaction, _format(body, context), "success")
 
     def _require_channel(self, interaction: dict) -> bool:
@@ -311,7 +310,7 @@ class DiscordInteractionController:
         channel_id = str(interaction.get("channel_id", ""))
         if channel_id == required:
             return True
-        self._ephemeral(interaction, f"## ℹ️ Use the verification channel\nPlease verify in <#{required}>.", "neutral")
+        self._ephemeral(interaction, f"## ℹ️ Utilise le canal de vérification\nMerci de vérifier dans <#{required}>.", "neutral")
         return False
 
     def _is_admin(self, interaction: dict) -> bool:
@@ -333,7 +332,7 @@ class DiscordInteractionController:
                 {
                     "type": 9,
                     "components": [{"type": 10, "content": body}],
-                    "accessory": {"type": 11, "media": {"url": thumbnail}, "description": "Minecraft character"},
+                    "accessory": {"type": 11, "media": {"url": thumbnail}, "description": "Personnage Minecraft"},
                 }
             )
         else:
@@ -344,7 +343,7 @@ class DiscordInteractionController:
                 {
                     "type": 1,
                     "components": [
-                        {"type": 2, "style": 4, "custom_id": "discordlink:unlink", "label": self.plugin.ui_value("success", "unlink_button", "Unlink")}
+                        {"type": 2, "style": 4, "custom_id": "discordlink:unlink", "label": self.plugin.ui_value("success", "unlink_button", "Délier")}
                     ],
                 }
             )
@@ -372,12 +371,10 @@ class DiscordInteractionController:
     def _fallback_color(style: str) -> int:
         return {"success": 0x57F287, "error": 0xED4245, "unlink": 0xFEE75C, "neutral": 0x5865F2}.get(style, 0x5865F2)
 
-
 def _user_id(interaction: dict) -> str:
     member = interaction.get("member", {}) or {}
     user = member.get("user", {}) or interaction.get("user", {}) or {}
     return str(user.get("id", ""))
-
 
 def _find_component_value(components: list, custom_id: str) -> str:
     for item in components:
@@ -397,11 +394,9 @@ def _find_component_value(components: list, custom_id: str) -> str:
                 return found
     return ""
 
-
 def _format(template: str, context: dict[str, str]) -> str:
     values = _SafeValues(context)
     return str(template).format_map(values)
-
 
 def _template_has_value(template: str, context: dict[str, str]) -> bool:
     keys = re.findall(r"\{([A-Za-z0-9_]+)\}", str(template))
@@ -409,11 +404,9 @@ def _template_has_value(template: str, context: dict[str, str]) -> bool:
         return bool(str(template).strip())
     return any(str(context.get(key, "")).strip() for key in keys)
 
-
 class _SafeValues(dict):
     def __missing__(self, key: str) -> str:
         return ""
-
 
 def url_value(value: str) -> str:
     return quote(value, safe="")
